@@ -37,6 +37,8 @@ class DockerManagement(object):
             # def update_c_pool():
         #     containers = client.containers.list(all=True, filters={'label':'process'})
         #
+    def add_process_task(self, request):
+        self.queue.append(request)
 
     def acquire(self):
         if self.c_size > len(self.calculate_pool):

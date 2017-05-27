@@ -4,7 +4,7 @@ COPY process.py /src/
 RUN pip install pymongo \
 && pip install qiniu \
 && pip install requests
-ENTRYPOINT ["python","/src/process.py"]
+#ENTRYPOINT ["python","/src/process.py"]
 #CMD /bin/bash
 
 
