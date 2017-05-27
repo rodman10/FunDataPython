@@ -1,13 +1,12 @@
-import time
 import JSONObject
 import json
 import stomp
-import docker
-
-from message_models.email import email
 import dockerBuildTest
+from stomp import ConnectionListener
 
-class MyListener(object):
+
+
+class MyListener(ConnectionListener):
 
     def on_error(self, headers, message):
         print('received an error %s' % message)

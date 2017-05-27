@@ -9,5 +9,6 @@ def hello_world():
 
 
 if __name__ == '__main__':
-    mq_client.start_mq_client()
     app.run()
+    mq_client.start_mq_client()
+
