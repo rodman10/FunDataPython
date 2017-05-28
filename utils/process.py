@@ -1,16 +1,18 @@
-#coding=utf-8
+# coding=utf-8
 from pymongo import *
 import pandas as pd
 import qiniu
 import requests
 import sys
-
+from RedisQueue import RedisQueue as rq
+import time
 
 accessKey = "z1jgIomPPX9dpfQQur9IcKxAscXjXn1Of4KvqCgA"
 secretKey = "wx-sSQb1FT2kiGRKilRgHk4IvCm_laFrDnT81_oh"
 domain = "op9cfw6va.bkt.clouddn.com"
 
-#解析结果
+
+# 解析结果
 def parseRet(retData, respInfo):
     if retData != None:
         print("Upload file success!")
@@ -33,16 +35,16 @@ def parseRet(retData, respInfo):
         print("Error: " + respInfo.text_body)
 
 
-#无key上传，http请求中不指定key参数
+# 无key上传，http请求中不指定key参数
 def upload_without_key(bucket, filePath):
-    #生成上传凭证
+    # 生成上传凭证
     auth = qiniu.Auth(accessKey, secretKey)
     upToken = auth.upload_token(bucket, key=None)
 
-    #上传文件
+    # 上传文件
     retData, respInfo = qiniu.put_file(upToken, None, filePath)
 
-    #解析结果
+    # 解析结果
     parseRet(retData, respInfo)
 
 
@@ -57,15 +59,24 @@ def download_with_key(key, path):
 
 # arg1 filename arg2 filepath arg3 pull_id arg4 datasetId
 if __name__ == "__main__":
-    print(sys.argv[:])
-    download_with_key(sys.argv[1], sys.argv[2])
-    p = pd.read_csv("/%s/%s" % (sys.argv[2], sys.argv[1])).describe()
-
-    with open('/%s/result.txt' % (sys.argv[2]), 'w+') as f:
-        f.write(str(p))
+    # print(sys.argv[:])
     client = MongoClient('mongodb://123.207.189.77:27017/')
     client.fundata.authenticate("illidan", "stormrage", mechanism='SCRAM-SHA-1')
     db = client.fundata
-    collection = db.pullRequestStatistics
-    statistics = {"pullrequest_id": sys.argv[3]}
-    collection.insert(statistics)
+    r = rq(host='123.206.231.182', port=6379, password='fundata')
+    task_queue = 'queue:task'
+    result_queue = 'queue:result'
+    while True:
+        item = r.get(task_queue)
+        file_name, p_id, d_id = item.split('-')
+        print(item)
+        download_with_key(file_name, sys.argv[1])
+        p = pd.read_csv("/%s/%s" % (sys.argv[1], file_name)).describe()
+
+        with open('/%s/result.txt' % (sys.argv[1]), 'w+') as f:
+            f.write(str(p))
+
+        collection = db.pullRequestStatistics
+        statistics = {"pullrequest_id": p_id}
+        collection.insert(statistics)
+        r.put(result_queue, '%s-%d-1' % (p_id, time.time()))

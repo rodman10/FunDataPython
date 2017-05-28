@@ -1,12 +1,15 @@
 import JSONObject
 import json
 import stomp
-import dockerBuildTest
 from stomp import ConnectionListener
-
+from RedisQueue import RedisQueue as rq
+from docker_service import DockerManagement as dm
 
 
 class MyListener(ConnectionListener):
+    def __init__(self):
+        self.r = rq(host='123.206.231.182', port=6379, password='fundata')
+        self.management = dm()
 
     def on_error(self, headers, message):
         print('received an error %s' % message)
@@ -14,7 +17,7 @@ class MyListener(ConnectionListener):
     def on_message(self, headers, message):
         print('received a message %s' % message)
         pull_request = json.loads(message, object_hook=JSONObject.JSONObject)
-        dockerBuildTest.process(pull_request.fileUrl, pull_request.id, pull_request.datasetId)
+        self.r.put('queue:task', '%s-%s-%s' % (pull_request.fileUrl, pull_request.id, pull_request.datasetId))
         print 'success'
 
 
