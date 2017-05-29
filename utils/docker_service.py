@@ -29,8 +29,7 @@ class DockerManagement(object):
         cursor.execute(create_tb_cmd)
         cursor.close()
 
-        while True:
-            item = self.r.get('queue:result')
+        for item in self.r.listen('queue:result'):
             print item
             cursor = conn.cursor()
             p_id, update_time, status = item.split('-')

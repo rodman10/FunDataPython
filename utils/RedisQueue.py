@@ -15,4 +15,9 @@ class RedisQueue(object):
             item = self.r.lpop(key)
         if item:
             item = item[1]
-        return str(item)
+        return item
+
+    def listen(self, key):
+        while True:
+            item = self.get(key)
+            yield item

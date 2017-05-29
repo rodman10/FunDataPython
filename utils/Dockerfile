@@ -1,4 +1,4 @@
-FROM civisanalytics/datascience-python
+FROM dhorta/science-conda2
 COPY process.py RedisQueue.py /src/
 # VOLUME /data
 RUN pip install pymongo \

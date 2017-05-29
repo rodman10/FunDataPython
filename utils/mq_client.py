@@ -9,7 +9,6 @@ from docker_service import DockerManagement as dm
 class MyListener(ConnectionListener):
     def __init__(self):
         self.r = rq(host='123.206.231.182', port=6379, password='fundata')
-        self.management = dm()
 
     def on_error(self, headers, message):
         print('received an error %s' % message)
@@ -21,7 +20,9 @@ class MyListener(ConnectionListener):
         print 'success'
 
 
-def start_mq_client():
+def start_mq_client(c_size=1, j_size=1):
+    management = dm(c_size, j_size)
+    management.start()
     conn = stomp.Connection10([('123.207.189.77', 61613)])
     conn.set_listener('', MyListener())
     conn.start()

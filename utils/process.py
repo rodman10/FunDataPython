@@ -53,7 +53,7 @@ def download_with_key(key, path):
     base_url = 'http://%s/%s' % (domain, key)
     private_url = auth.private_download_url(base_url)
     r = requests.get(private_url)
-    with open('/' + path+'/'+key,'wb+') as f:
+    with open('/%s/%s' % (path, key),'wb+') as f:
         f.write(r.content)
     assert r.status_code == 200
 
@@ -66,7 +66,7 @@ if __name__ == "__main__":
     r = rq(host='123.206.231.182', port=6379, password='fundata')
     task_queue = 'queue:task'
     result_queue = 'queue:result'
-    while True:
+    for item in r.listen(task_queue):
         item = r.get(task_queue)
         file_name, p_id, d_id = item.split('-')
         print(item)
