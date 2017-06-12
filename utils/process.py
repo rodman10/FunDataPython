@@ -6,6 +6,7 @@ import requests
 import sys
 from RedisQueue import RedisQueue as rq
 import time
+import os
 
 accessKey = "z1jgIomPPX9dpfQQur9IcKxAscXjXn1Of4KvqCgA"
 secretKey = "wx-sSQb1FT2kiGRKilRgHk4IvCm_laFrDnT81_oh"
@@ -48,12 +49,13 @@ def upload_without_key(bucket, filePath):
     parseRet(retData, respInfo)
 
 
-def download_with_key(key, path):
+def download_with_key(key, path, dataset_id):
     auth = qiniu.Auth(accessKey, secretKey)
     base_url = 'http://%s/%s' % (domain, key)
     private_url = auth.private_download_url(base_url)
     r = requests.get(private_url)
-    with open('/%s/%s' % (path, key),'wb+') as f:
+    os.mkdir('/%s/dataset_%s' % (path, dataset_id))
+    with open('/%s/dataset_%s/%s' % (path, dataset_id, key),'wb+') as f:
         f.write(r.content)
     assert r.status_code == 200
 
@@ -70,10 +72,10 @@ if __name__ == "__main__":
         item = r.get(task_queue)
         file_name, p_id, d_id = item.split('-')
         print(item)
-        download_with_key(file_name, sys.argv[1])
-        p = pd.read_csv("/%s/%s" % (sys.argv[1], file_name)).describe()
+        download_with_key(file_name, sys.argv[1], d_id)
+        p = pd.read_csv("/%s/dataset_%s/%s" % (sys.argv[1], d_id, file_name)).describe()
 
-        with open('/%s/result.txt' % (sys.argv[1]), 'w+') as f:
+        with open('/%s/dataset_%s/result.txt' % (sys.argv[1], d_id), 'w+') as f:
             f.write(str(p))
 
         collection = db.pullRequestStatistics
