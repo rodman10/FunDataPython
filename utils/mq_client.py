@@ -6,7 +6,7 @@ from RedisQueue import RedisQueue as rq
 from docker_service import DockerManagement as dm
 
 
-class MyListener(ConnectionListener):
+class TaskListener(ConnectionListener):
     def __init__(self):
         self.r = rq(host='123.206.231.182', port=6379, password='fundata')
 
@@ -20,15 +20,30 @@ class MyListener(ConnectionListener):
         print 'success'
 
 
+class JupyterListener(ConnectionListener):
+    def __init__(self):
+        self.r = rq(host='123.206.231.182', port=6379, password='fundata')
+
+    def on_error(self, headers, message):
+        print('received an error %s' % message)
+
+    def on_message(self, headers, message):
+
+        print('received a message %s' % message)
+        pull_request = json.loads(message, object_hook=JSONObject.JSONObject)
+        self.r.put('queue:task', '%s-%s-%s' % (pull_request.fileUrl, pull_request.id, pull_request.datasetId))
+        print 'success'
+
 def start_mq_client(c_size=1, j_size=1):
     management = dm(c_size, j_size)
     management.start()
     conn = stomp.Connection10([('123.207.189.77', 61613)])
-    conn.set_listener('', MyListener())
+    conn.set_listener('', TaskListener())
     conn.start()
     conn.connect()
 
     conn.subscribe(destination='/queue/pullrequest.queue', id=1, ack='auto')
+    conn.subscribe(destination='/queue/terminal.queue', id=2, ack='auto')
     #conn.send(body='hello,garfield! this is '.join(sys.argv[1:]), destination='/queue/test')
     # conn.send(body=email().toJSON(), destination='/queue/pullrequest.queue', headers={"_type":"fundata.message.Email"})
     while True:

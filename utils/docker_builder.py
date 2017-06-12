@@ -12,10 +12,15 @@ class DockerFactory(object):
         # process container or jupyter container
         return self.client.images.build(tag=self.img_tags[img_id], path=os.path.split(os.path.realpath(__file__))[0])
 
-    def run_container(self, img_id, ):
+    def run_container(self, img_id, **kwargs):
         if img_id == 0:
             return self.client.containers.run(self.img_tags[img_id], 'data', labels=[self.img_labels[img_id]],
                                               detach=True, volumes={'/home/fundata': {'bind': '/data', 'mode': 'rw'}})
+        else:
+            return self.client.containers.run(self.img_tags[img_id], 'data', labels=[self.img_labels[img_id]],
+                                              ports={'8000/tcp': kwargs.get('port')},
+                                              detach=True,
+                                              volumes={'/home/fundata/%s' % (kwargs.get("dir")): {'bind': '/data', 'mode': 'rw'}})
 
     def run_containers(self, num, img_id,):
         c_list = []
