@@ -1,5 +1,7 @@
 import docker
 import os
+import JupyterProxy as jp
+from notebook.auth import passwd
 
 
 class DockerFactory(object):
@@ -10,17 +12,30 @@ class DockerFactory(object):
 
     def build_img(self, img_id):
         # process container or jupyter container
-        return self.client.images.build(tag=self.img_tags[img_id], path=os.path.split(os.path.realpath(__file__))[0])
+        cur_dir = os.path.split(os.path.realpath(__file__))[0]
+        if img_id == 0:
+            return self.client.images.build(tag=self.img_tags[img_id],
+                                            path=cur_dir)
+        else:
+            f = open(cur_dir+"/JupyterDockerfile")
+            return self.client.images.build(tag=self.img_tags[img_id],
+                                            path=cur_dir, fileobj=f)
 
     def run_container(self, img_id, **kwargs):
         if img_id == 0:
             return self.client.containers.run(self.img_tags[img_id], 'data', labels=[self.img_labels[img_id]],
                                               detach=True, volumes={'/home/fundata': {'bind': '/data', 'mode': 'rw'}})
         else:
-            return self.client.containers.run(self.img_tags[img_id], 'data', labels=[self.img_labels[img_id]],
-                                              ports={'8000/tcp': kwargs.get('port')},
+            port = kwargs.get('port')
+            user_id = kwargs.get('user_id')
+            jp.JupyterProxy().get_terminal(user_id, port)
+            pwd = u'19951116'
+            hash = passwd(pwd)
+            return self.client.containers.run(self.img_tags[img_id], "--NotebookApp.base_url=\"/jupyter/%s\" --NotebookApp.base_project_url= \"/notebook\" --NotebookApp.password=%s" % (user_id, hash),
+                                              labels=[self.img_labels[img_id]],
+                                              ports={'8888/tcp': port},
                                               detach=True,
-                                              volumes={'/home/fundata/%s' % (kwargs.get("dir")): {'bind': '/data', 'mode': 'rw'}})
+                                              volumes={'/home/fundata/%s' % (kwargs.get("dir")): {'bind': '/notebook', 'mode': 'rw'}})
 
     def run_containers(self, num, img_id,):
         c_list = []

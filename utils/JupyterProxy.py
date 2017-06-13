@@ -5,6 +5,6 @@ class JupyterProxy(object):
     def __init__(self):
         self.terminals = []
 
-    def get_terminal(self):
+    def get_terminal(self, user_id, port):
         headers = {'Content-Type': 'application/json'}
-        r = requests.post("http://localhost:8001/api/routes/tt", json={"target":"fds"}, headers = headers)
+        r = requests.post("http://123.207.189.77:8001/api/routes/jupyter/%s" % user_id, json={"target":"http://123.207.189.77:%d" % (port)}, headers = headers)
