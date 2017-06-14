@@ -9,6 +9,7 @@ class DockerFactory(object):
         self.client = docker.DockerClient(base_url='tcp://123.207.189.77:2375')
         self.img_tags = ['process:v1', 'jupyter:v1']
         self.img_labels = ['process', 'jupyter']
+        self.port_set = set()
 
     def build_img(self, img_id):
         # process container or jupyter container
@@ -20,6 +21,12 @@ class DockerFactory(object):
             f = open(cur_dir+"/JupyterDockerfile")
             return self.client.images.build(tag=self.img_tags[img_id],
                                             path=cur_dir, fileobj=f)
+
+    def get_port(self):
+        for i in range(7000, 7500):
+            if i not in self.port_set:
+                self.port_set.add(i)
+                return i
 
     def run_container(self, img_id, **kwargs):
         if img_id == 0:
