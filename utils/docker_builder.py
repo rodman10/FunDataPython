@@ -7,7 +7,7 @@ from notebook.auth import passwd
 class DockerFactory(object):
     def __init__(self):
         self.client = docker.DockerClient(base_url='tcp://123.207.189.77:2375')
-        self.img_tags = ['process:v1', 'jupyter:v1']
+        self.img_tags = ['process:v1', 'continuumio/anaconda3']
         self.img_labels = ['process', 'jupyter']
         self.port_set = set()
 
@@ -38,10 +38,20 @@ class DockerFactory(object):
             jp.JupyterProxy().get_terminal(user_id, port)
             pwd = u'19951116'
             hash = passwd(pwd)
-            return self.client.containers.run(self.img_tags[img_id], "--NotebookApp.base_url=\"/jupyter/%s\" --NotebookApp.base_project_url= \"/notebook\" --NotebookApp.password=%s" % (user_id, hash),
+            return self.client.containers.run(self.img_tags[img_id], '''
+            /opt/conda/bin/jupyter notebook 
+            --ip='*' 
+            --port=8888 
+            --no-browser 
+            --allow-root
+            --NotebookApp.base_url=\"/jupyter/%s\" 
+            --NotebookApp.base_project_url= \"/notebook\" 
+            --NotebookApp.password=%s
+            ''' % (user_id, hash),
                                               labels=[self.img_labels[img_id]],
                                               ports={'8888/tcp': port},
-                                              detach=True,
+                                              stderr=True,
+                                              detach=False,
                                               volumes={'/home/fundata/%s' % (kwargs.get("dir")): {'bind': '/notebook', 'mode': 'rw'}})
 
     def run_containers(self, num, img_id,):
