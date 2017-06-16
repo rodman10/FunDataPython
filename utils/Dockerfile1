@@ -1,5 +1,5 @@
 FROM dhorta/science-conda2
-COPY merge.py RedisQueue.py /src/
+COPY ./merge.py RedisQueue.py /src/
 # VOLUME /data
 RUN pip install pymongo \
 && pip install redis \

@@ -34,10 +34,8 @@ class MergeListener(ConnectionListener):
         print 'success'
 
 
-
-
-def start_mq_client(c_size=1, j_size=1):
-    management = dm(c_size, j_size)
+def start_mq_client(c_size=1, m_size=1):
+    management = dm(c_size, m_size)
     management.start()
     conns, listeners, queues = [], [TaskListener(), MergeListener()], ['/queue/pullrequest.queue', '/queue/mergerequest.queue']
     for i in range(1):

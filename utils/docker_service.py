@@ -4,16 +4,18 @@ import sqlite3
 
 
 class DockerManagement(object):
-    def __init__(self, c_size=100, j_size=100):
-        self.calculate_pool, self.jupyter_pool = None, None
-        self.c_size, self.j_size = c_size, j_size
+    def __init__(self, c_size=100, m_size=100):
+        self.calculate_pool, self.merge_pool = None, None
+        self.c_size, self.m_size = c_size, m_size
         self.queue = []
         self.r = rq(host='123.206.231.182', port=6379, password='fundata')
 
     def start(self):
         df = DockerFactory()
         df.build_img(0)
+        df.build_img(2)
         self.calculate_pool = df.run_containers(self.c_size, 0)
+        self.merge_pool = df.run_containers(self.m_size, 2)
         conn = sqlite3.connect('docker_log')
         cursor = conn.cursor()
         # try:
