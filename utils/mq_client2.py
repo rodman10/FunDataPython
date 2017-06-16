@@ -29,7 +29,7 @@ producer = producer_session.createProducer(msg_queue)
 # import Queue
 # queue = Queue.Queue(0)
 
-# Keep consumers in a list, because if we don't hold a reference to
+# Keep consumers in a list, because if we don'JupyterDockerfile hold a reference to
 # the consumer, it is closed
 # consumers = []
 # for i in xrange(nconsumers):

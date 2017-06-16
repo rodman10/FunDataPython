@@ -1,0 +1,11 @@
+FROM dhorta/science-conda2
+COPY merge.py RedisQueue.py /src/
+# VOLUME /data
+RUN pip install pymongo \
+&& pip install redis \
+&& pip install qiniu \
+&& pip install requests
+ENTRYPOINT ["python","/src/merge.py"]
+#CMD /bin/bash
+
+

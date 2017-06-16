@@ -1,8 +1,5 @@
 FROM continuumio/anaconda3
 RUN /opt/conda/bin/conda install jupyter -y --quiet
-# CMD ["jupyter", "notebook" --NotebookApp.base_url="/"]
-ENTRYPOINT ["jupyter","notebook", "--ip=\"0.0.0.0\"", "--no-browser"]
+# CMD ["/opt/conda/bin/jupyter", "notebook" --NotebookApp.base_url="/"]
+ENTRYPOINT ["/opt/conda/bin/jupyter","notebook", "--ip='*'", "--no-browser"]
 #CMD /bin/bash -c "/opt/conda/bin/conda install jupyter -y --quiet && mkdir /opt/notebooks && /opt/conda/bin/jupyter notebook --notebook-dir=/opt/notebooks --ip='*' --port=8888 --no-browser"
-
-
-

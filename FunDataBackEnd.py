@@ -28,9 +28,8 @@ def hello_world():
 @allow_cross_domain
 @app.route('/terminal', methods=['POST'])
 def enter_terminal():
-    port = docker_factory.get_port()
-    docker_factory.run_container(1, port=port, user_id=str(request.form['user_id']),
-                          dir="dataset_%s" % str(request.form['datasetId']))
+    docker_factory.run_container(1, user_id=int(request.form['user_id']),
+                          dataset_id=int(request.form['datasetId']))
     headers = {"Access-Control-Allow-Origin": "*"}
     return Response(json.dumps({'url': 'http://123.207.189.77:8000/jupyter/%s' % str(request.form['user_id'])}),
                     mimetype="application/json", headers=headers)
