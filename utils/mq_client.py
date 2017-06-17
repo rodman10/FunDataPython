@@ -6,6 +6,7 @@ from RedisQueue import RedisQueue as rq
 from docker_service import DockerManagement as dm
 from message_models.merge_result import MergeResult
 
+
 class TaskListener(ConnectionListener):
     def __init__(self):
         self.r = rq(host='123.206.231.182', port=6379, password='fundata')
@@ -30,7 +31,7 @@ class MergeListener(ConnectionListener):
     def on_message(self, headers, message):
         print('received a message %s' % message)
         merge_request = json.loads(message, object_hook=JSONObject.JSONObject)
-        self.r.put('queue:merge', '%s-%s-%s' % (merge_request.newUrl, merge_request.mainUrl, merge_request.datasetId))
+        self.r.put('queue:merge', '%s-%s-%s-%s' % (merge_request.newUrl, merge_request.mainUrl, merge_request.datasetId, merge_request.pullRequestId))
         print 'success'
 
 

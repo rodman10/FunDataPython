@@ -68,14 +68,23 @@ if __name__ == "__main__":
     db = client.fundata
     r = rq(host='123.206.231.182', port=6379, password='fundata')
     merge_queue = 'queue:merge'
-    result_queue = 'queue:result'
+    result_queue = 'queue:merge_result'
     for item in r.listen(merge_queue):
         item = r.get(merge_queue)
-        new_name, main_name, d_id = item.split('-')
+        new_name, main_name, d_id, p_id = item.split('-')
         download_with_key(new_name, sys.argv[1], d_id)
         download_with_key(main_name, sys.argv[1], d_id)
         ####################################################
         # merge operate                                    #
         # return value: file_path                          #
         ####################################################
-        upload_with_key("fundata", "", main_name)
+        pds = []
+        main_path = '/%s/dataset_%s/%s' % (sys.argv[1], d_id, main_name)
+        pds.append(pd.read_csv(main_path))
+        names = new_name.split(",")
+        for n in names:
+            pds.append(pd.read_csv('/%s/dataset_%s/%s' % (sys.argv[1], d_id, n)))
+        df = pd.concat(pds, ignore_index=True)
+        df.to_csv(main_path)
+        upload_with_key("fundata", main_path, main_name)
+        r.put(result_queue, '%s-%d-1' % (p_id, time.time()))
