@@ -32,7 +32,6 @@ class DockerManagement(object):
         cursor.close()
 
         for item in self.r.listen('queue:result'):
-            print item
             cursor = conn.cursor()
             p_id, update_time, status = item.split('-')
             insert_dt_cmd = 'INSERT INTO logs (status, p_id, update_time) VALUES (?,?,?);'

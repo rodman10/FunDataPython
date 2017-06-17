@@ -4,7 +4,7 @@ import stomp
 from stomp import ConnectionListener
 from RedisQueue import RedisQueue as rq
 from docker_service import DockerManagement as dm
-
+from message_models.merge_result import MergeResult
 
 class TaskListener(ConnectionListener):
     def __init__(self):
@@ -37,19 +37,26 @@ class MergeListener(ConnectionListener):
 def start_mq_client(c_size=1, m_size=1):
     management = dm(c_size, m_size)
     management.start()
-    conns, listeners, queues = [], [TaskListener(), MergeListener()], ['/queue/pullrequest.queue', '/queue/mergerequest.queue']
-    for i in range(1):
-        conns[i] = stomp.Connection10([('123.207.189.77', 61613)])
-        conns[i].set_listener('', listeners[i])
-        conns[i].start()
-        conns[i].connect()
-        conns[i].subscribe(destination=queues[i], id=i, ack='auto')
+    sub_conns, listeners, sub_queues = [], [TaskListener(), MergeListener()], ['/queue/pullrequest.queue', '/queue/mergerequest.queue']
+    for i in range(len(sub_queues)):
+        sub_conns.append(stomp.Connection10([('123.207.189.77', 61613)]))
+        sub_conns[i].set_listener('', listeners[i])
+        sub_conns[i].start()
+        sub_conns[i].connect()
+        sub_conns[i].subscribe(destination=sub_queues[i], id=i, ack='auto')
+
+    pub_conns, pub_queues = [], ['/queue/mergeresult.queue']
+    for i in range(len(pub_queues)):
+        pub_conns.append(stomp.Connection10([('123.207.189.77', 61613)]))
+        pub_conns[i].start()
+        pub_conns[i].connect()
+
+    r = rq(host='123.206.231.182', port=6379, password='fundata')
+    for item in r.listen('queue:merge_result'):
+        pub_conns[0].send(body=MergeResult(int(item)).toJSON(), destination=pub_queues[0], headers={"_type":"fundata.message.ResultMessage"})
+    # pub_conns[0].send(body=MergeResult(int("1")).toJSON(), destination=pub_queues[0], headers={"_type":"fundata.message.ResultMessage"})
+
     #conn.send(body='hello,garfield! this is '.join(sys.argv[1:]), destination='/queue/test')
-    # conn.send(body=email().toJSON(), destination='/queue/pullrequest.queue', headers={"_type":"fundata.message.Email"})
-    while True:
-        pass
-# time.sleep(2)
-# conn.disconnect()
 
 
 if __name__ == '__main__':

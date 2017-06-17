@@ -1,7 +1,7 @@
 #coding = utf-8
 import pyactivemq
 from pyactivemq import ActiveMQConnectionFactory
-from message_models.email import email
+from message_models.merge_result import email
 
 class MessageListener(pyactivemq.MessageListener):
     def __init__(self, name, queue):

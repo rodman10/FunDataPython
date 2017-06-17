@@ -60,7 +60,6 @@ def download_with_key(key, path, dataset_id):
     assert r.status_code == 200
 
 
-
 # arg1 filename arg2 filepath arg3 pull_id arg4 datasetId
 if __name__ == "__main__":
     # print(sys.argv[:])
