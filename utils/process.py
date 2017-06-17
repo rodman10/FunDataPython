@@ -53,7 +53,7 @@ def process(filename, expressionList, expressionSet):
     for expression in expressionList:
         ls = expression.split()
         for i in ls:
-            if(i not in expressionSet):
+            if i not in expressionSet:
                 vars()[i] = df[i]
         statistics[expression] = True if (~eval(expression)).sum() ==0 else False
     return statistics

@@ -81,10 +81,8 @@ if __name__ == "__main__":
         pds = []
         main_path = '/%s/dataset_%s/%s' % (sys.argv[1], d_id, main_name)
         pds.append(pd.read_csv(main_path))
-        names = new_name.split(",")
-        for n in names:
-            pds.append(pd.read_csv('/%s/dataset_%s/%s' % (sys.argv[1], d_id, n)))
+        pds.append(pd.read_csv('/%s/dataset_%s/%s' % (sys.argv[1], d_id, new_name)))
         df = pd.concat(pds, ignore_index=True)
         df.to_csv(main_path)
         upload_with_key("fundata", main_path, main_name)
-        r.put(result_queue, '%s-%d-1' % (p_id, time.time()))
+        r.put(result_queue, p_id)
