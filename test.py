@@ -9,5 +9,5 @@ client = MongoClient('mongodb://123.207.189.77:27017/')
 client.fundata.authenticate("illidan", "stormrage", mechanism='SCRAM-SHA-1')
 db = client.fundata
 
-ds = db.datasetMeta.find_one({"dataset_id" : 1})
-print ds["expressions"]
+ds = db.datasetMeta.find_one({"dataset_id" : 1}, {"expressions":1})
+print ds["expressions"]["1"]

@@ -70,11 +70,11 @@ if __name__ == "__main__":
     result_queue = 'queue:result'
     for item in r.listen(task_queue):
         item = r.get(task_queue)
-        file_name, p_id, d_id = item.split('-')
+        file_name, p_id, d_id, table = item.split('-')
         download_with_key(file_name, sys.argv[1], d_id)
-        ds = db.datasetMeta.find_one({"dataset_id": 1})
+        ds = db.datasetMeta.find_one({"dataset_id": 1}, {"expressions":table})
         s = set(['+', '-', '*', '/', '>', '<'])
-        res = process("/%s/dataset_%s/%s" % (sys.argv[1], d_id, file_name), ds["expressions"], s)
+        res = process("/%s/dataset_%s/%s" % (sys.argv[1], d_id, file_name), ds["expressions"][table], s)
 
         # with open('/%s/dataset_%s/result.txt' % (sys.argv[1], d_id), 'w+') as f:
         #     f.write(str(p))

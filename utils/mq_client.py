@@ -17,7 +17,7 @@ class TaskListener(ConnectionListener):
     def on_message(self, headers, message):
         print('received a message %s' % message)
         pull_request = json.loads(message, object_hook=JSONObject.JSONObject)
-        self.r.put('queue:task', '%s-%s-%s' % (pull_request.fileUrl, pull_request.id, pull_request.datasetId))
+        self.r.put('queue:task', '%s-%s-%s-%s' % (pull_request.fileUrl, pull_request.id, pull_request.datasetId, pull_request.tableName))
         print 'success'
 
 
